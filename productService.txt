@@ -1,0 +1,180 @@
+product controller
+
+package com.ust.productService.controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.ust.productService.model.Product;
+import com.ust.productService.service.ProductService;
+
+
+
+@RestController
+@RequestMapping("/product")
+public class ProductController {
+	
+	@Autowired
+	private ProductService productService;
+
+	@GetMapping("/getAllProduct")
+	public List<Product> getAllProduct(){
+		return productService.getAllProduct(); 
+	}
+	
+	@GetMapping("/{productId}")
+	public Product getProductById(@PathVariable("productId") Long productId) {
+		return productService.getProductById(productId);
+	}
+	
+	@PutMapping("/update/{productId}")
+	public void updateProductStock(@RequestBody Product product, @PathVariable("productId") Long productId) {
+		Product existingProduct = productService.getProductById(productId);
+		existingProduct.setQuantity(product.getQuantity());
+		productService.updateProduct(existingProduct);
+	}
+}
+
+
+product
+
+package com.ust.productService.model;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name="product")
+public class Product {
+	
+	@Id
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	private Long productId;
+	
+	private String productName;
+	private Double price;
+	private Double quantity;
+	
+	public Double getQuantity() {
+		return quantity;
+	}
+	public void setQuantity(Double quantity) {
+		this.quantity = quantity;
+	}
+	public Long getProductId() {
+		return productId;
+	}
+	public void setProductId(Long productId) {
+		this.productId = productId;
+	}
+	public String getProductName() {
+		return productName;
+	}
+	public void setProductName(String productName) {
+		this.productName = productName;
+	}
+	public Double getPrice() {
+		return price;
+	}
+	public void setPrice(Double price) {
+		this.price = price;
+	}
+	public Product(Long productId, String productName, Double price, Double quantity) {
+		super();
+		this.productId = productId;
+		this.productName = productName;
+		this.price = price;
+		this.quantity=quantity;
+	}
+	public Product() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+	
+	
+
+}
+
+
+product repo
+
+package com.ust.productService.repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import com.ust.productService.model.Product;
+
+@Repository
+public interface ProductRepo extends JpaRepository<Product, Long>{
+
+}
+
+
+product service
+
+package com.ust.productService.service;
+
+import java.util.List;
+
+import com.ust.productService.model.Product;
+
+
+public interface ProductService {
+	
+	public List<Product> getAllProduct();
+	public Product getProductById(Long productId);
+	public Product updateProduct(Product product);
+
+}
+
+
+product service impl
+
+package com.ust.productService.service;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.ust.productService.model.Product;
+import com.ust.productService.repository.ProductRepo;
+
+@Service
+public class ProductServiceImpl implements ProductService {
+	
+	@Autowired
+	private ProductRepo productRepo;
+
+	@Override
+	public List<Product> getAllProduct() {
+		// TODO Auto-generated method stub
+		return productRepo.findAll();
+	}
+
+	@Override
+	public Product getProductById(Long productId) {
+		// TODO Auto-generated method stub
+		Optional<Product> opt = productRepo.findById(productId);
+		return opt.get();
+	}
+
+	@Override
+	public Product updateProduct(Product product) {
+		// TODO Auto-generated method stub
+		return productRepo.save(product);
+	}
+
+}
